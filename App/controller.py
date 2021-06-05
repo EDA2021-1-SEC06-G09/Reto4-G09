@@ -23,8 +23,8 @@
 import config as cf
 import model
 import csv
-
-
+from DISClib.ADT import map as mp
+from DISClib.ADT import graph as gr
 """
 El controlador se encarga de mediar entre la vista y el modelo.
 """
@@ -45,21 +45,33 @@ def loadCountries(catalog):
     inputfile = csv.DictReader(open(countriesfile, encoding='utf-8'), delimiter=",")
     for country in inputfile:
         model.addCountry(catalog, country)
+        if country['CountryName'] == 'Chuuk':
+            print('El ultimo pais cargado es: ', country['CountryName'], ', Tiene ', country['Population'], ' Habitantes y tiene ', country['Internet users'], ' usuarios de internet.')
+    print('Total de Paises cargados: ' , str(mp.size(catalog['countries'])))
 
 
 def loadLandingPoints(catalog):
     landingpointsfile = cf.data_dir + "landing_points.csv"
     inputfile = csv.DictReader(open(landingpointsfile, encoding='utf-8'), delimiter=",")
+    i = 0
     for landingpoint in inputfile:
         model.addLandingPoint(catalog, landingpoint)
+        if i == 0:
+            print('Info del primer Landing Point cargado: ', landingpoint)
+        i+=1
 
 
 def loadConnections(catalog):
     connectionsfile = cf.data_dir + "connections.csv"
     inputfile = csv.DictReader(open(connectionsfile, encoding='utf-8-sig'), delimiter=",")
+ 
     for connection in inputfile:
-        model.addCable(catalog, connection)
         model.addConnection(catalog, connection)
+    print('Total de Landing Points Cargados: ', str(mp.size(catalog['landing_points'])))
+    print('Total de conexiones entre landing points: ', gr.numEdges(catalog['connections']))
+
+
+        
 
 # Funciones de ordenamiento
 

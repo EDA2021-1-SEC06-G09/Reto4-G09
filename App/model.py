@@ -42,7 +42,8 @@ los mismos.
 def initCatalog():
     catalog = {'countries': None,
                'landing_points': None,
-               'connections': None}
+               'connections': None,
+               'LP-Name':None}
 
     catalog['countries'] = mp.newMap(numelements=239,
                                      maptype='PROBING',
@@ -55,6 +56,9 @@ def initCatalog():
     catalog['connections'] = gr.newGraph(datastructure='ADJ_LIST',
                                          directed=True,
                                          size=3263)
+
+    catalog['LP-Name'] = mp.newMap(numelements=1280, maptype='PROBING')
+
     return catalog
 
 
@@ -65,19 +69,57 @@ def addCountry(catalog, country):
 
 
 def addLandingPoint(catalog, landingpoint):
-    mp.put(catalog['landing_points'], landingpoint['landing_point_id'], landingpoint)
-    country = me.getValue(mp.get(catalog['countries'], landingpoint['name'].split(', ')[-1]))
+    LPCity = landingpoint['name'].split(", ")[0]
+    LPCountry = landingpoint['name'].split(', ')[-1]
+    LPvalue = newLP(landingpoint)
+
+    mp.put(catalog['landing_points'], LPCity, LPvalue)
+    country = me.getValue(mp.get(catalog['countries'], LPCountry))
     lt.addLast(country['landing_points'], landingpoint)
+
+    tuplaPaisCity = (LPCountry, LPCity)
+    mp.put(catalog['LP-Name'], landingpoint['landing_point_id'], tuplaPaisCity)
+
+    
 
 
 def addConnection(catalog, connection):
-    origin = formatVertex(connection['origin'], connection['cable_name'])
-    destination = formatVertex(connection['destination'], connection['cable_name'])
-    weight = connection['cable_length']
-    print(weight)
+    ciudad = me.getValue(mp.get(catalog['LP-Name'], connection['origin']))[1]
+    ciudadDestino = me.getValue(mp.get(catalog['LP-Name'], connection['destination']))[1]
+    pais = me.getValue(mp.get(catalog['LP-Name'], connection['origin']))[0]
+    origin = formatVertex(ciudad, connection['cable_name'])
+    destination = formatVertex(ciudadDestino, connection['cable_name'])
+    
+    valorCiudad = me.getValue(mp.get(catalog['landing_points'], ciudad))
+    listaCables = valorCiudad['cables']
+    lt.addLast(listaCables, connection)
+
+    infoPais = me.getValue(mp.get(catalog['countries'], pais))['info']
+    LPcapital = mp.get(catalog['landing_points'], infoPais['CapitalName'])
+    if LPcapital is None:
+        LPvalue = newCapitalLP(infoPais['CapitalName'])
+        mp.put(catalog['landing_points'], infoPais['CapitalName'], LPvalue)
+
+    
+    
+
+
+    weightstr = connection['cable_length']
+    try:
+        weight = float(weightstr.split()[0].replace(",", ""))
+    except:
+        weight = weightstr
     addVertex(catalog, origin)
     addVertex(catalog, destination)
-    addEdge(catalog, origin, destination)
+    addEdge(catalog, origin, destination, weight)
+    if not isCapital(catalog, connection['origin']):
+        capitalFormat = formatVertex(infoPais['CapitalName'], connection['cable_name'])
+        addVertex(catalog, capitalFormat)
+        addEdge(catalog, capitalFormat, origin, weight=0.1)
+
+
+
+    
 
 
 def addVertex(catalog, vertexname):
@@ -85,10 +127,10 @@ def addVertex(catalog, vertexname):
         gr.insertVertex(catalog['connections'], vertexname)
 
 
-def addEdge(catalog, origin, destination):
+def addEdge(catalog, origin, destination, weight):
     edge = gr.getEdge(catalog['connections'], origin, destination)
     if edge is None:
-        gr.addEdge(catalog['connections'], origin, destination)
+        gr.addEdge(catalog['connections'], origin, destination, weight)
 
 
 def formatVertex(point, cable):
@@ -97,12 +139,35 @@ def formatVertex(point, cable):
 # Funciones para creacion de datos
 def newCountry(country):
     countryvalue = {'info': country,
-                    'landing_points': lt.newList('ARRAY_LIST')}
+                    'landing_points': lt.newList(datastructure='ARRAY_LIST')}
     return countryvalue
 
+def newLP(LP):
+    LPvalue = {'info': LP, 'cables': lt.newList(datastructure="ARRAY_LIST")}
+    return LPvalue
+
+def newCapitalLP(Capital):
+    LPvalue = {'info': None, 'cables': lt.newList(datastructure="ARRAY_LIST")}
+    return LPvalue
+
 # Funciones de consulta
-def getClusters(catalog):
-    connections 
+
+def getClusters(catalog, LP1, LP2):
+    clust = 0
+
+
+def isCapital(catalog, idciudad):
+    get = mp.get(catalog['LP-Name'], idciudad)
+    if get is None:
+        return True
+    else:
+        pais = me.getValue(get)[0]
+        info = me.getValue(mp.get(catalog['countries'], pais))
+        if me.getValue(get)[1] == info['info']['CapitalName']:
+            return True
+        else:
+            return False
+        
 
 
 # Funciones de comparacion
