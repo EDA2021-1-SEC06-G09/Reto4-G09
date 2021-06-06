@@ -35,23 +35,33 @@ def initCatalog():
 
 # Funciones para la carga de datos
 def loadData(catalog):
-    loadCountries(catalog)
-    loadLandingPoints(catalog)
+    lastcountry = loadCountries(catalog)
+    firstlp = loadLandingPoints(catalog)
     loadConnections(catalog)
+    return firstlp, lastcountry
 
 
 def loadCountries(catalog):
     countriesfile = cf.data_dir + "countries.csv"
     inputfile = csv.DictReader(open(countriesfile, encoding='utf-8'), delimiter=",")
+    lastcountry = None
     for country in inputfile:
         model.addCountry(catalog, country)
+        lastcountry = country
+    return lastcountry
 
 
 def loadLandingPoints(catalog):
     landingpointsfile = cf.data_dir + "landing_points.csv"
     inputfile = csv.DictReader(open(landingpointsfile, encoding='utf-8'), delimiter=",")
+    i = 0
+    firstlp = None
     for landingpoint in inputfile:
         model.addLandingPoint(catalog, landingpoint)
+        if i == 0:
+            firstlp = landingpoint
+            i += 1
+    return firstlp
 
 
 def loadConnections(catalog):
@@ -60,6 +70,7 @@ def loadConnections(catalog):
     for connection in inputfile:
         model.addCable(catalog, connection)
         model.addConnection(catalog, connection)
+    model.addCapitalEdges(catalog)
 
 # Funciones de ordenamiento
 

@@ -24,6 +24,8 @@ import config as cf
 import sys
 import controller
 from DISClib.ADT import list as lt
+from DISClib.ADT import map as mp
+from DISClib.ADT import graph as gr
 assert cf
 
 def initCatalog():
@@ -31,7 +33,7 @@ def initCatalog():
 
 
 def loadData(catalog):
-    controller.loadData(catalog)
+    return controller.loadData(catalog)
 
 
 """
@@ -49,6 +51,7 @@ def printMenu():
     print("4- Encontrar ruta más corta (distancia) entre dos paises")
     print("5- Identificar la infraestructura crítica")
     print("6- Analisar impacto del fallo de un landing point")
+    print("Presione cualquier otro número para salir\n")
 
 catalog = None
 
@@ -61,12 +64,27 @@ while True:
     if int(inputs[0]) == 1:
         print("Cargando información de los archivos ....")
         catalog = initCatalog()
-        loadData(catalog)
+        firstandlast = loadData(catalog)
+        print("\nNúmero total de landing points:", mp.size(catalog['landing_points']),
+              "\nNúmero total de connecciones:", gr.numEdges(catalog['connections']),
+              "\nNúmero total de paises:", mp.size(catalog['countries']))
+        firstlp = firstandlast[0]
+        print("\nPrimer landing point cargado:\n",
+              "Identificador:", firstlp['id'],
+              "- Nombre:", firstlp['name'],
+              "- Latitud:", firstlp['latitude'],
+              "- Longitud:", firstlp['longitude'])
+        lastcountry = firstandlast[1]
+        print("\nÚltimo país cargado:\n",
+              "Nombre:", lastcountry['CountryName'],
+              "- Población:", lastcountry['Population'],
+              "- Usuarios de Internet:", lastcountry['Internet users'], "\n")
 
     elif int(inputs[0]) == 2:
         lp1 = input("Nombre del primer landing point: ")
         lp2 = input("Nombre del segundo landing point: ")
-        controller.getClusters(catalog)
+        custers = controller.getClusters(catalog)
+        
 
     elif int(inputs[0]) == 3:
         pass

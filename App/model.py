@@ -25,12 +25,14 @@
  """
 
 
+from DISClib.DataStructures.edge import weight
 import config as cf
 from DISClib.ADT import list as lt
 from DISClib.ADT import map as mp
 from DISClib.ADT import graph as gr
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
+from DISClib.Algorithms.Graphs import scc
 assert cf
 
 """
@@ -42,6 +44,7 @@ los mismos.
 def initCatalog():
     catalog = {'countries': None,
                'landing_points': None,
+               'cables': None,
                'connections': None}
 
     catalog['countries'] = mp.newMap(numelements=239,
@@ -52,8 +55,12 @@ def initCatalog():
                                           maptype='PROBING',
                                           comparefunction=compareLandingPointIds)
 
+    catalog['cables'] = mp.newMap(numelements=2000,
+                                  maptype='PROBING',
+                                  comparefunction=compareCountries)
+
     catalog['connections'] = gr.newGraph(datastructure='ADJ_LIST',
-                                         directed=True,
+                                         directed=False,
                                          size=3263)
     return catalog
 
@@ -62,6 +69,7 @@ def initCatalog():
 def addCountry(catalog, country):
     countryvalue = newCountry(country)
     mp.put(catalog['countries'], country['CountryName'], countryvalue)
+    addVertex(catalog, country['CapitalName'], False)
 
 
 def addLandingPoint(catalog, landingpoint):
@@ -70,39 +78,57 @@ def addLandingPoint(catalog, landingpoint):
     lt.addLast(country['landing_points'], landingpoint)
 
 
+def addCable(catalog, connection):
+    if not mp.contains(catalog['cables'], connection['cable_id']):
+        filteredcable = dict(filter(lambda elem: elem[0] != 'origin' and elem[0]!= 'destination', connection.items()))
+        mp.put(catalog['cables'], connection['cable_id'], filteredcable)
+        filteredcable.clear()
+
+
 def addConnection(catalog, connection):
-    origin = formatVertex(connection['origin'], connection['cable_name'])
-    destination = formatVertex(connection['destination'], connection['cable_name'])
+    origin = formatVertex(connection['origin'], connection['cable_id'])
+    destination = formatVertex(connection['destination'], connection['cable_id'])
     weight = connection['cable_length']
-    print(weight)
-    addVertex(catalog, origin)
-    addVertex(catalog, destination)
-    addEdge(catalog, origin, destination)
+    addVertex(catalog, origin, True)
+    addVertex(catalog, destination, True)
+    addEdge(catalog, origin, destination, weight)
 
 
-def addVertex(catalog, vertexname):
+def addCapitalEdges(catalog):
+    pass
+
+
+def addVertex(catalog, vertexname, notcapital):
     if not gr.containsVertex(catalog['connections'], vertexname):
+        preexistingvertices = gr.vertices(catalog['connections'])
         gr.insertVertex(catalog['connections'], vertexname)
+        if notcapital:
+            for vertex in lt.iterator(preexistingvertices):
+                if vertexname.split('*')[0] == vertex.split('*')[0]:
+                    addEdge(catalog, vertexname, vertex, 0.1)
+        preexistingvertices.clear()
 
 
-def addEdge(catalog, origin, destination):
+def addEdge(catalog, origin, destination, weight):
     edge = gr.getEdge(catalog['connections'], origin, destination)
     if edge is None:
-        gr.addEdge(catalog['connections'], origin, destination)
+        gr.addEdge(catalog['connections'], origin, destination, weight)
 
-
-def formatVertex(point, cable):
-    return point + "-" + cable
 
 # Funciones para creacion de datos
 def newCountry(country):
-    countryvalue = {'info': country,
+    countryvalue = {'country_info': country,
                     'landing_points': lt.newList('ARRAY_LIST')}
     return countryvalue
 
+
+def formatVertex(point, cable):
+    return point + "*" + cable
+
+
 # Funciones de consulta
 def getClusters(catalog):
-    connections 
+    clusters = scc.connectedComponents(scc.KosarajuSCC(catalog['connections']))
 
 
 # Funciones de comparacion
