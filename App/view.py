@@ -108,15 +108,15 @@ while True:
         ocountry = input("Nombre del país de origen: ")
         dcountry = input("Nombre del país de destino: ")
         retorno = controller.Req3(catalog, ocountry, dcountry)
-        print(controller.Req3(catalog, ocountry, dcountry))
         print(printReq3(retorno[0]))
         print('La distancia total es de ', retorno[1])
+
     elif int(inputs[0]) == 5:
         pass
 
     elif int(inputs[0]) == 6:
         landingpoint = input("Nombre del landing point: ")
-        pass
+        controller.getAffectedCountries(catalog, landingpoint)
 
     else:
         catalog.clear()

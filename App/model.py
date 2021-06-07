@@ -69,7 +69,7 @@ def initCatalog():
                                           comparefunction=compareLandingPointIds)
 
     catalog['connections'] = gr.newGraph(datastructure='ADJ_LIST',
-                                         directed=True,
+                                         directed=False,
                                          size=3263)
 
     catalog['LP-Name'] = mp.newMap(numelements=1280, maptype='PROBING')
@@ -136,7 +136,6 @@ def addConnection(catalog, connection):
         capitalFormat = formatVertex(infoPais['CapitalName'], connection['cable_name'])
         addVertex(catalog, capitalFormat)
         addEdge(catalog, capitalFormat, origin, weight=0.1)
-        addEdge(catalog, origin, capitalFormat, weight=0.1)
         #anade comunicacion entre LP costero y capital
         if (len(LPcapital['info']) == 1):
             #if not lt.isPresent(LPcapital['cables'], connection):
@@ -161,7 +160,6 @@ def sameLPcables(catalog):
             LP_cable1 = formatVertex(valor['info']['name'].split(", ")[0], cable1['cable_name'])
             try:
                 addEdge(catalog,LP_cable1 , LP_cable2, weight=0.1)
-                addEdge(catalog, LP_cable2, LP_cable1, weight=0.1)
             except:
                 pass
 
@@ -270,6 +268,10 @@ def Req3(catalog, pais1, pais2):
 
     path = dijsktra.pathTo(search, LP2)
     return path, distancia
+
+
+def getAffectedCountries(catalog, landingpoint):
+    pass
 
 
 # Funciones de comparacion

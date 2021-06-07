@@ -70,7 +70,7 @@ def loadConnections(catalog):
     inputfile = csv.DictReader(open(connectionsfile, encoding='utf-8-sig'), delimiter=",")
     for connection in inputfile:
         model.addConnection(catalog, connection)
-        
+    model.sameLPcables(catalog)
 
 # Funciones de ordenamiento
 
@@ -86,3 +86,7 @@ def Req2(catalog):
 
 def Req3(catalog, LP1, LP2):
     return model.Req3(catalog, LP1, LP2)
+
+
+def getAffectedCountries(catalog, landingpoint):
+    model.getAffectedCountries(catalog, landingpoint)
