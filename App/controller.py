@@ -23,8 +23,8 @@
 import config as cf
 import model
 import csv
-
-
+from DISClib.ADT import map as mp
+from DISClib.ADT import graph as gr
 """
 El controlador se encarga de mediar entre la vista y el modelo.
 """
@@ -32,6 +32,7 @@ El controlador se encarga de mediar entre la vista y el modelo.
 # Inicialización del Catálogo
 def initCatalog():
     return model.initCatalog()
+
 
 # Funciones para la carga de datos
 def loadData(catalog):
@@ -68,12 +69,28 @@ def loadConnections(catalog):
     connectionsfile = cf.data_dir + "connections.csv"
     inputfile = csv.DictReader(open(connectionsfile, encoding='utf-8-sig'), delimiter=",")
     for connection in inputfile:
-        model.addCable(catalog, connection)
         model.addConnection(catalog, connection)
-    model.addCapitalEdges(catalog)
+    model.sameLPcables(catalog)
 
 # Funciones de ordenamiento
 
+
 # Funciones de consulta sobre el catálogo
-def getClusters(catalog):
-    model.getClusters(catalog)
+def getClusters(catalog, lp1,lp2):
+    return model.getClusters(catalog, lp1, lp2)
+
+
+def Req2(catalog):
+    return model.Req2(catalog)
+
+
+def Req3(catalog, LP1, LP2):
+    return model.Req3(catalog, LP1, LP2)
+
+
+def getCriticalInfrastructure(catalog):
+    model.getCriticalInfrastructure(catalog)
+
+
+def getAffectedCountries(catalog, landingpoint):
+    return model.getAffectedCountries(catalog, landingpoint)

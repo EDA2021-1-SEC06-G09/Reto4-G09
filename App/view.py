@@ -24,9 +24,11 @@ import config as cf
 import sys
 import controller
 from DISClib.ADT import list as lt
+from DISClib.ADT import stack
 from DISClib.ADT import map as mp
 from DISClib.ADT import graph as gr
 assert cf
+
 
 def initCatalog():
     return controller.initCatalog()
@@ -43,8 +45,17 @@ se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
 
+def printReq3(pila):
+    i = 1
+    tamano = stack.size(pila)
+    while i <= tamano:
+        cable = stack.pop(pila)
+        print('Desde ', cable['vertexA'].split('-')[0], ' hasta ', cable['vertexB'].split('-')[0], ' con una distancia de ', cable['weight'])
+        i+=1
+
+
 def printMenu():
-    print("Bienvenido")
+    print("\nBienvenido")
     print("1- Cargar información en el catálogo")
     print("2- Identificar clústeres de comunicación")
     print("3- Identificar puntos de conexión críticos")
@@ -83,23 +94,33 @@ while True:
     elif int(inputs[0]) == 2:
         lp1 = input("Nombre del primer landing point: ")
         lp2 = input("Nombre del segundo landing point: ")
-        custers = controller.getClusters(catalog)
-        
+        retorno = controller.getClusters(catalog, lp1, lp2)
+        print('Hay ', retorno[0], ' clusters.')
+        if retorno[1]:
+            print("Los dos landing points pertenecen a un mismo cluster")
+        else:
+            print("Los dos landing points no pertenecen a un mismo cluster")
 
     elif int(inputs[0]) == 3:
-        pass
+        print(controller.Req2(catalog))
 
     elif int(inputs[0]) == 4:
         ocountry = input("Nombre del país de origen: ")
         dcountry = input("Nombre del país de destino: ")
-        pass
+        retorno = controller.Req3(catalog, ocountry, dcountry)
+        print(printReq3(retorno[0]))
+        print('La distancia total es de ', retorno[1])
 
     elif int(inputs[0]) == 5:
-        pass
+        controller.getCriticalInfrastructure(catalog)
 
     elif int(inputs[0]) == 6:
         landingpoint = input("Nombre del landing point: ")
-        pass
+        result = controller.getAffectedCountries(catalog, landingpoint)
+        print("\nNúmero de países afectados:", lt.size(result))
+        print("\nPaíses afectados:")
+        for pais in lt.iterator(result):
+            print(pais)
 
     else:
         catalog.clear()
