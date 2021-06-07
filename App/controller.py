@@ -67,6 +67,10 @@ def loadConnections(catalog):
  
     for connection in inputfile:
         model.addConnection(catalog, connection)
+
+    print('Total de conexiones entre landing points: ', gr.numEdges(catalog['connections']))
+    model.sameLPcables(catalog)
+
     print('Total de Landing Points Cargados: ', str(mp.size(catalog['landing_points'])))
     print('Total de conexiones entre landing points: ', gr.numEdges(catalog['connections']))
 
@@ -76,5 +80,11 @@ def loadConnections(catalog):
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
-def getClusters(catalog):
-    model.getClusters(catalog)
+def getClusters(catalog, lp1,lp2):
+    return model.getClusters(catalog, lp1, lp2)
+
+def Req2(catalog):
+    return model.Req2(catalog)
+
+def Req3(catalog, LP1, LP2):
+    return model.Req3(catalog, LP1, LP2)

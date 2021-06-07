@@ -31,12 +31,11 @@ from DISClib.ADT import map as mp
 from DISClib.ADT import graph as gr
 from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
+from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Graphs import dijsktra
 assert cf
 
-"""
-Se define la estructura de un catálogo de videos. El catálogo tendrá dos listas, una para los videos, otra para las categorias de
-los mismos.
-"""
+
 
 # Construccion de modelos
 def initCatalog():
@@ -84,12 +83,12 @@ def addLandingPoint(catalog, landingpoint):
 
 
 def addConnection(catalog, connection):
+    #añade las conexiones del csv y ademas hace la conexion entre el landing point y su ciudad capital
     ciudad = me.getValue(mp.get(catalog['LP-Name'], connection['origin']))[1]
     ciudadDestino = me.getValue(mp.get(catalog['LP-Name'], connection['destination']))[1]
     pais = me.getValue(mp.get(catalog['LP-Name'], connection['origin']))[0]
     origin = formatVertex(ciudad, connection['cable_name'])
     destination = formatVertex(ciudadDestino, connection['cable_name'])
-    
     valorCiudad = me.getValue(mp.get(catalog['landing_points'], ciudad))
     listaCables = valorCiudad['cables']
     lt.addLast(listaCables, connection)
@@ -97,18 +96,21 @@ def addConnection(catalog, connection):
     infoPais = me.getValue(mp.get(catalog['countries'], pais))['info']
     LPcapital = mp.get(catalog['landing_points'], infoPais['CapitalName'])
     if LPcapital is None:
-        LPvalue = newCapitalLP(infoPais['CapitalName'])
+        LPvalue = newCapitalLP(infoPais['CapitalName'], pais)
         mp.put(catalog['landing_points'], infoPais['CapitalName'], LPvalue)
+    #klk
+    LPcapital = me.getValue(mp.get(catalog['landing_points'], infoPais['CapitalName']))
 
     
     
-
 
     weightstr = connection['cable_length']
     try:
-        weight = float(weightstr.split()[0].replace(",", ""))
+        weight = int(weightstr.split()[0].replace(",", ""))
+        if origin == 'Cancún-Caribbean Express (CX)':
+            print(weight)
     except:
-        weight = weightstr
+        weight = 9999999
     addVertex(catalog, origin)
     addVertex(catalog, destination)
     addEdge(catalog, origin, destination, weight)
@@ -116,10 +118,36 @@ def addConnection(catalog, connection):
         capitalFormat = formatVertex(infoPais['CapitalName'], connection['cable_name'])
         addVertex(catalog, capitalFormat)
         addEdge(catalog, capitalFormat, origin, weight=0.1)
+        addEdge(catalog, origin, capitalFormat, weight=0.1)
+        #klk
+        if (len(LPcapital['info']) == 1):
+            #if not lt.isPresent(LPcapital['cables'], connection):
+            lt.addLast(LPcapital['cables'], connection)
+ 
+    
+
 
 
 
     
+def sameLPcables(catalog):
+    #conecta los cables que pertenecen a un mismo landing point entre ellos
+    setvalores = mp.valueSet(catalog['landing_points'])
+    setLlaves = mp.keySet(catalog['landing_points'])
+    for valor in lt.iterator(setvalores):
+        i=1
+        while i <= lt.size(valor['cables']):
+            cable1 = lt.getElement(valor['cables'], i)
+            i+=1
+
+        for cable2 in lt.iterator(valor['cables']):
+            LP_cable2 = formatVertex(valor['info']['name'].split(", ")[0], cable2['cable_name'])
+            LP_cable1 = formatVertex(valor['info']['name'].split(", ")[0], cable1['cable_name'])
+            try:
+                addEdge(catalog,LP_cable1 , LP_cable2, weight=0.1)
+                addEdge(catalog, LP_cable2, LP_cable1, weight=0.1)
+            except:
+                pass
 
 
 def addVertex(catalog, vertexname):
@@ -146,14 +174,32 @@ def newLP(LP):
     LPvalue = {'info': LP, 'cables': lt.newList(datastructure="ARRAY_LIST")}
     return LPvalue
 
-def newCapitalLP(Capital):
-    LPvalue = {'info': None, 'cables': lt.newList(datastructure="ARRAY_LIST")}
+def newCapitalLP(Capital, pais):
+    #klk
+    string = Capital + ', ' + pais
+    info = {'name': string}
+    LPvalue = {'info': info, 'cables': lt.newList(datastructure="ARRAY_LIST")}
     return LPvalue
+
 
 # Funciones de consulta
 
 def getClusters(catalog, LP1, LP2):
-    clust = 0
+    SCCc = scc.KosarajuSCC(catalog['connections'])
+    numComponentes1 = scc.connectedComponents(SCCc)
+    boolean = False
+    infoLP1 = me.getValue(mp.get(catalog['landing_points'], LP1))
+    infoLP2 = me.getValue(mp.get(catalog['landing_points'], LP2))
+    for cable1 in lt.iterator(infoLP1['cables']):
+        cable_LP1 = formatVertex(LP1, cable1['cable_name'])
+        for cable2 in lt.iterator(infoLP2['cables']):
+            cable_LP2 = formatVertex(LP2, cable2['cable_name'])
+
+            boolean = scc.stronglyConnected(SCCc, cable_LP1, cable_LP2)
+            if boolean:
+                break
+    
+    return numComponentes1, boolean
 
 
 def isCapital(catalog, idciudad):
@@ -168,7 +214,35 @@ def isCapital(catalog, idciudad):
         else:
             return False
         
+def prueba(catalog):
+    print(gr.adjacentEdges(catalog['connections'], formatVertex('Barranquilla', 'America Movil Submarine Cable System-1 (AMX-1)')))
+    print(me.getValue(mp.get(catalog['landing_points'], 'Bogota'))['cables'])
 
+def Req2(catalog):
+    valores = mp.valueSet(catalog['landing_points'])
+    for valor in lt.iterator(valores):
+        try:
+            print('El landing point en ', valor['info']['name'], ' con identificador ', valor['info']['landing_point_id'], ' tiene ', lt.size(valor['cables']), ' cables.')
+        except:
+            print('El landing point en ', valor['info']['name'], ' con identificador ', '----', ' tiene ', lt.size(valor['cables']), ' cables.')
+
+def Req3(catalog, pais1, pais2):
+    capital1 = me.getValue(mp.get(catalog['countries'], pais1))['info']['CapitalName']
+
+    cables1 = me.getValue(mp.get(catalog['landing_points'], capital1))['cables']
+    cable1 = lt.getElement(cables1, 1)['cable_name']
+
+    capital2 = me.getValue(mp.get(catalog['countries'], pais2))['info']['CapitalName']
+    cables2 = me.getValue(mp.get(catalog['landing_points'], capital2))['cables']
+    cable2 = lt.getElement(cables2, 1)['cable_name']
+
+    LP1 = formatVertex(capital1, cable1)
+    LP2 = formatVertex(capital2, cable2)
+    search = dijsktra.Dijkstra(catalog['connections'], LP1)
+    distancia = dijsktra.distTo(search, LP2)
+
+    path = dijsktra.pathTo(search, LP2)
+    return path, distancia
 
 # Funciones de comparacion
 def compareCountries(country1, keyvaluecountry):

@@ -24,6 +24,7 @@ import config as cf
 import sys
 import controller
 from DISClib.ADT import list as lt
+from DISClib.ADT import stack
 assert cf
 
 def initCatalog():
@@ -40,6 +41,14 @@ Presenta el menu de opciones y por cada seleccion
 se hace la solicitud al controlador para ejecutar la
 operación solicitada
 """
+
+def printReq3(pila):
+    i = 1
+    tamano = stack.size(pila)
+    while i <= tamano:
+        cable = stack.pop(pila)
+        print('Desde ', cable['vertexA'].split('-')[0], ' hasta ', cable['vertexB'].split('-')[0], ' con una distancia de ', cable['weight'])
+        i+=1
 
 def printMenu():
     print("Bienvenido")
@@ -66,16 +75,23 @@ while True:
     elif int(inputs[0]) == 2:
         lp1 = input("Nombre del primer landing point: ")
         lp2 = input("Nombre del segundo landing point: ")
-        controller.getClusters(catalog)
+        retorno = controller.getClusters(catalog, lp1, lp2)
+        print('Hay ', retorno[0], ' clusters.')
+        if retorno[1]:
+            print('Los dos landing points pertenecen a un mismo cluster')
+        else:
+            print('Los dos landing points no pertenecen a un mismo cluster')
 
     elif int(inputs[0]) == 3:
-        pass
+        print(controller.Req2(catalog))
 
     elif int(inputs[0]) == 4:
         ocountry = input("Nombre del país de origen: ")
         dcountry = input("Nombre del país de destino: ")
-        pass
-
+        retorno = controller.Req3(catalog, ocountry, dcountry)
+        print(controller.Req3(catalog, ocountry, dcountry))
+        print(printReq3(retorno[0]))
+        print('La distancia total es de ', retorno[1])
     elif int(inputs[0]) == 5:
         pass
 
