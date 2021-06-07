@@ -39,6 +39,22 @@ assert cf
 
 # Construccion de modelos
 def initCatalog():
+    '''Countries: Mapa de hash que tiene como key el nombre de un pais y valor un diccionario con:
+     ['info']-> informacion del csv del pais
+     ['landing_points']-> landing points en el pais
+
+     landing_points: mapa de hash que tiene como key el nombre de la ciudad y valor:
+     ['info']-> informacion del csv del LP
+     ['cables']-> cables en el LP
+
+     Connections: grafo en el formato:
+     vertice: (nombre ciudad)-(nombre cable)
+     arco: distancia entre 2 ciudades
+
+     LP-Name: mapa usado para conseguir nombre de ciudad y pais que corresponden a un ID numerico de un LP
+     llave-> id del landing point
+     valor-> tupla (pais, ciudad)
+    '''
     catalog = {'countries': None,
                'landing_points': None,
                'connections': None,
@@ -98,10 +114,10 @@ def addConnection(catalog, connection):
     if LPcapital is None:
         LPvalue = newCapitalLP(infoPais['CapitalName'], pais)
         mp.put(catalog['landing_points'], infoPais['CapitalName'], LPvalue)
-    #klk
+    
     LPcapital = me.getValue(mp.get(catalog['landing_points'], infoPais['CapitalName']))
 
-    
+    #Hasta aca solo se han creado variables y anadido las capitales al mapa landing points
     
 
     weightstr = connection['cable_length']
@@ -111,6 +127,8 @@ def addConnection(catalog, connection):
             print(weight)
     except:
         weight = 9999999
+        #para lidiar con distancias n.a.
+
     addVertex(catalog, origin)
     addVertex(catalog, destination)
     addEdge(catalog, origin, destination, weight)
@@ -119,10 +137,11 @@ def addConnection(catalog, connection):
         addVertex(catalog, capitalFormat)
         addEdge(catalog, capitalFormat, origin, weight=0.1)
         addEdge(catalog, origin, capitalFormat, weight=0.1)
-        #klk
+        #anade comunicacion entre LP costero y capital
         if (len(LPcapital['info']) == 1):
             #if not lt.isPresent(LPcapital['cables'], connection):
             lt.addLast(LPcapital['cables'], connection)
+            #anade el cable a la lista de cables de la capital
  
     
 
@@ -203,6 +222,7 @@ def getClusters(catalog, LP1, LP2):
 
 
 def isCapital(catalog, idciudad):
+    '''Funcion para determinar si una ciudad es capital o no'''
     get = mp.get(catalog['LP-Name'], idciudad)
     if get is None:
         return True
@@ -219,6 +239,7 @@ def prueba(catalog):
     print(me.getValue(mp.get(catalog['landing_points'], 'Bogota'))['cables'])
 
 def Req2(catalog):
+    #con las capitales retorna resultados extranos, por como se agregan cables a la lista de la capital en la funcion addconection
     valores = mp.valueSet(catalog['landing_points'])
     for valor in lt.iterator(valores):
         try:
@@ -227,6 +248,8 @@ def Req2(catalog):
             print('El landing point en ', valor['info']['name'], ' con identificador ', '----', ' tiene ', lt.size(valor['cables']), ' cables.')
 
 def Req3(catalog, pais1, pais2):
+    #Retorna resultados extranos a veces tomando paths sin sentido porque se aprovecha del hecho de que ahora mismo la distancia
+    #entre una capital y un lp costero es 0.1
     capital1 = me.getValue(mp.get(catalog['countries'], pais1))['info']['CapitalName']
 
     cables1 = me.getValue(mp.get(catalog['landing_points'], capital1))['cables']
