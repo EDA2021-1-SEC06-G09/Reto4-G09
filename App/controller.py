@@ -33,58 +33,56 @@ El controlador se encarga de mediar entre la vista y el modelo.
 def initCatalog():
     return model.initCatalog()
 
+
 # Funciones para la carga de datos
 def loadData(catalog):
-    loadCountries(catalog)
-    loadLandingPoints(catalog)
+    lastcountry = loadCountries(catalog)
+    firstlp = loadLandingPoints(catalog)
     loadConnections(catalog)
+    return firstlp, lastcountry
 
 
 def loadCountries(catalog):
     countriesfile = cf.data_dir + "countries.csv"
     inputfile = csv.DictReader(open(countriesfile, encoding='utf-8'), delimiter=",")
+    lastcountry = None
     for country in inputfile:
         model.addCountry(catalog, country)
-        if country['CountryName'] == 'Chuuk':
-            print('El ultimo pais cargado es: ', country['CountryName'], ', Tiene ', country['Population'], ' Habitantes y tiene ', country['Internet users'], ' usuarios de internet.')
-    print('Total de Paises cargados: ' , str(mp.size(catalog['countries'])))
+        lastcountry = country
+    return lastcountry
 
 
 def loadLandingPoints(catalog):
     landingpointsfile = cf.data_dir + "landing_points.csv"
     inputfile = csv.DictReader(open(landingpointsfile, encoding='utf-8'), delimiter=",")
     i = 0
+    firstlp = None
     for landingpoint in inputfile:
         model.addLandingPoint(catalog, landingpoint)
         if i == 0:
-            print('Info del primer Landing Point cargado: ', landingpoint)
-        i+=1
+            firstlp = landingpoint
+            i += 1
+    return firstlp
 
 
 def loadConnections(catalog):
     connectionsfile = cf.data_dir + "connections.csv"
     inputfile = csv.DictReader(open(connectionsfile, encoding='utf-8-sig'), delimiter=",")
- 
     for connection in inputfile:
         model.addConnection(catalog, connection)
-
-    print('Total de conexiones entre landing points: ', gr.numEdges(catalog['connections']))
-    model.sameLPcables(catalog)
-
-    print('Total de Landing Points Cargados: ', str(mp.size(catalog['landing_points'])))
-    print('Total de conexiones entre landing points: ', gr.numEdges(catalog['connections']))
-
-
         
 
 # Funciones de ordenamiento
+
 
 # Funciones de consulta sobre el catálogo
 def getClusters(catalog, lp1,lp2):
     return model.getClusters(catalog, lp1, lp2)
 
+
 def Req2(catalog):
     return model.Req2(catalog)
+
 
 def Req3(catalog, LP1, LP2):
     return model.Req3(catalog, LP1, LP2)

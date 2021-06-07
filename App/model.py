@@ -94,8 +94,8 @@ def addLandingPoint(catalog, landingpoint):
 
     tuplaPaisCity = (LPCountry, LPCity)
     mp.put(catalog['LP-Name'], landingpoint['landing_point_id'], tuplaPaisCity)
-
     
+
 
 
 def addConnection(catalog, connection):
@@ -145,9 +145,6 @@ def addConnection(catalog, connection):
  
     
 
-
-
-
     
 def sameLPcables(catalog):
     #conecta los cables que pertenecen a un mismo landing point entre ellos
@@ -169,6 +166,7 @@ def sameLPcables(catalog):
                 pass
 
 
+
 def addVertex(catalog, vertexname):
     if not gr.containsVertex(catalog['connections'], vertexname):
         gr.insertVertex(catalog['connections'], vertexname)
@@ -183,15 +181,18 @@ def addEdge(catalog, origin, destination, weight):
 def formatVertex(point, cable):
     return point + "-" + cable
 
+
 # Funciones para creacion de datos
 def newCountry(country):
     countryvalue = {'info': country,
                     'landing_points': lt.newList(datastructure='ARRAY_LIST')}
     return countryvalue
 
+
 def newLP(LP):
     LPvalue = {'info': LP, 'cables': lt.newList(datastructure="ARRAY_LIST")}
     return LPvalue
+
 
 def newCapitalLP(Capital, pais):
     #klk
@@ -202,7 +203,6 @@ def newCapitalLP(Capital, pais):
 
 
 # Funciones de consulta
-
 def getClusters(catalog, LP1, LP2):
     SCCc = scc.KosarajuSCC(catalog['connections'])
     numComponentes1 = scc.connectedComponents(SCCc)
@@ -234,18 +234,22 @@ def isCapital(catalog, idciudad):
         else:
             return False
         
+
 def prueba(catalog):
     print(gr.adjacentEdges(catalog['connections'], formatVertex('Barranquilla', 'America Movil Submarine Cable System-1 (AMX-1)')))
     print(me.getValue(mp.get(catalog['landing_points'], 'Bogota'))['cables'])
+
 
 def Req2(catalog):
     #con las capitales retorna resultados extranos, por como se agregan cables a la lista de la capital en la funcion addconection
     valores = mp.valueSet(catalog['landing_points'])
     for valor in lt.iterator(valores):
-        try:
-            print('El landing point en ', valor['info']['name'], ' con identificador ', valor['info']['landing_point_id'], ' tiene ', lt.size(valor['cables']), ' cables.')
-        except:
-            print('El landing point en ', valor['info']['name'], ' con identificador ', '----', ' tiene ', lt.size(valor['cables']), ' cables.')
+        if lt.size(valor['cables']) > 1:
+            try:
+                print('El landing point en ', valor['info']['name'], ' con identificador ', valor['info']['landing_point_id'], ' tiene ', lt.size(valor['cables']), ' cables.')
+            except:
+                print('El landing point en ', valor['info']['name'], ' con identificador ', '----', ' tiene ', lt.size(valor['cables']), ' cables.')
+
 
 def Req3(catalog, pais1, pais2):
     #Retorna resultados extranos a veces tomando paths sin sentido porque se aprovecha del hecho de que ahora mismo la distancia
@@ -267,6 +271,7 @@ def Req3(catalog, pais1, pais2):
     path = dijsktra.pathTo(search, LP2)
     return path, distancia
 
+
 # Funciones de comparacion
 def compareCountries(country1, keyvaluecountry):
     country2 = keyvaluecountry['key']
@@ -277,6 +282,7 @@ def compareCountries(country1, keyvaluecountry):
     else:
         return -1
 
+
 def compareLandingPointIds(id1, keyvaluepoint):
     id2 = keyvaluepoint['key']
     if id1 == id2:
@@ -285,5 +291,6 @@ def compareLandingPointIds(id1, keyvaluepoint):
         return 1
     else:
         return -1
+
 
 # Funciones de ordenamiento
