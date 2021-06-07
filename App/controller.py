@@ -88,5 +88,9 @@ def Req3(catalog, LP1, LP2):
     return model.Req3(catalog, LP1, LP2)
 
 
+def getCriticalInfrastructure(catalog):
+    model.getCriticalInfrastructure(catalog)
+
+
 def getAffectedCountries(catalog, landingpoint):
     return model.getAffectedCountries(catalog, landingpoint)

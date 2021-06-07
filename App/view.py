@@ -112,7 +112,7 @@ while True:
         print('La distancia total es de ', retorno[1])
 
     elif int(inputs[0]) == 5:
-        pass
+        controller.getCriticalInfrastructure(catalog)
 
     elif int(inputs[0]) == 6:
         landingpoint = input("Nombre del landing point: ")

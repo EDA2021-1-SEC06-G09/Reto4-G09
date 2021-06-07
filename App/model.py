@@ -33,6 +33,7 @@ from DISClib.DataStructures import mapentry as me
 from DISClib.Algorithms.Sorting import shellsort as sa
 from DISClib.Algorithms.Graphs import scc
 from DISClib.Algorithms.Graphs import dijsktra
+from DISClib.Algorithms.Graphs import prim
 assert cf
 
 
@@ -270,13 +271,22 @@ def Req3(catalog, pais1, pais2):
     return path, distancia
 
 
+def getCriticalInfrastructure(catalog):
+    mst = prim.PrimMST(catalog['connections'])
+    print(gr.numVertices(mst))
+    pass
+
+
+
 def getAffectedCountries(catalog, landingpoint):
     lp = me.getValue(mp.get(catalog['landing_points'], landingpoint))
     affectedcountries = lt.newList('ARRAY_LIST')
     for cable in lt.iterator(lp['cables']):
+        #O(N) donde N es la cantidad de cables que se conectan con ese landing point
         vertexname = landingpoint + "-" + cable['cable_name']
         affectedvertices = gr.adjacents(catalog['connections'], vertexname)
         for vertex in lt.iterator(affectedvertices):
+            #O(M) donde M es la la cantidad de vertices adyacentes al nodo específico
             vertexcountry = me.getValue(mp.get(catalog['landing_points'], vertex.split("-")[0]))['info']["name"].split(", ")[-1]
             if not lt.isPresent(affectedcountries, vertexcountry):
                 lt.addLast(affectedcountries, vertexcountry)
