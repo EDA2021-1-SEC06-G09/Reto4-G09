@@ -89,4 +89,4 @@ def Req3(catalog, LP1, LP2):
 
 
 def getAffectedCountries(catalog, landingpoint):
-    model.getAffectedCountries(catalog, landingpoint)
+    return model.getAffectedCountries(catalog, landingpoint)

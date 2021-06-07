@@ -271,7 +271,17 @@ def Req3(catalog, pais1, pais2):
 
 
 def getAffectedCountries(catalog, landingpoint):
-    pass
+    lp = me.getValue(mp.get(catalog['landing_points'], landingpoint))
+    affectedcountries = lt.newList('ARRAY_LIST')
+    for cable in lt.iterator(lp['cables']):
+        vertexname = landingpoint + "-" + cable['cable_name']
+        affectedvertices = gr.adjacents(catalog['connections'], vertexname)
+        for vertex in lt.iterator(affectedvertices):
+            vertexcountry = me.getValue(mp.get(catalog['landing_points'], vertex.split("-")[0]))['info']["name"].split(", ")[-1]
+            if not lt.isPresent(affectedcountries, vertexcountry):
+                lt.addLast(affectedcountries, vertexcountry)
+    return affectedcountries
+
 
 
 # Funciones de comparacion

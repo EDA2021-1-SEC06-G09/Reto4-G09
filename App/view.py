@@ -55,7 +55,7 @@ def printReq3(pila):
 
 
 def printMenu():
-    print("Bienvenido")
+    print("\nBienvenido")
     print("1- Cargar información en el catálogo")
     print("2- Identificar clústeres de comunicación")
     print("3- Identificar puntos de conexión críticos")
@@ -116,7 +116,11 @@ while True:
 
     elif int(inputs[0]) == 6:
         landingpoint = input("Nombre del landing point: ")
-        controller.getAffectedCountries(catalog, landingpoint)
+        result = controller.getAffectedCountries(catalog, landingpoint)
+        print("\nNúmero de países afectados:", lt.size(result))
+        print("\nPaíses afectados:")
+        for pais in lt.iterator(result):
+            print(pais)
 
     else:
         catalog.clear()
